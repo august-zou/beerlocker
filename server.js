@@ -1,7 +1,9 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
-var Beer = require('./models/beer');
+var beerController = require('./controllers/beer');
+var userController = require('./controllers/user');
+
 
 mongoose.connect('mongodb://localhost:27017/beerlocker');
 var app = express();
@@ -21,76 +23,21 @@ router.get('/', function(req, res) {
 });
 
 // Create a new route with the prefix /beers
-var beersRoute = router.route('/beers');
-
-// Create endpoint /api/beers for POSTS
-beersRoute.post(function(req, res) {
-  var beer = new Beer();
-  beer.name = req.body.name;
-  beer.type = req.body.type;
-  beer.quantity = req.body.quantity;
-
-  beer.save(function(err) {
-    if (err)
-      res.send(err);
-    res.json({ message: 'Beer added to the locker!', data: beer });
-  });
-});
-
-// Create endpoint /api/beers for GET
-beersRoute.get(function(req, res) {
-  // Use the Beer model to find all beer
-  Beer.find(function(err, beers) {
-    if (err)
-      res.send(err);
-
-    res.json(beers);
-  });
-});
+router.route('/beers')
+ .post(beerController.postBeers)
+ .get(beerController.getBeers);
 
 // Create a new route with the /beers/:beer_id prefix
-var beerRoute = router.route('/beers/:beer_id');
+router.route('/beers/:beer_id')
+  .get(beerController.getBeer)
+  .put(beerController.putBeer)
+  .delete(beerController.deleteBeer);
 
-// Create endpoint /api/beers/:beer_id for GET
-beerRoute.get(function(req, res) {
-  // Use the Beer model to find a specific beer
-  Beer.findById(req.params.beer_id, function(err, beer) {
-    if (err)
-      res.send(err);
+// Create endpoint handlers for /users
+router.route('/users')
+  .post(userController.postUsers)
+  .get(userController.getUsers);
 
-    res.json(beer);
-  });
-});
-
-// Create endpoint /api/beers/:beer_id for PUT
-beerRoute.put(function(req, res) {
-  // Use the Beer model to find a specific beer
-  Beer.findById(req.params.beer_id, function(err, beer) {
-    if (err)
-      res.send(err);
-
-    // Update the existing beer quantity
-    beer.quantity = req.body.quantity;
-
-    // Save the beer and check for errors
-    beer.save(function(err) {
-      if (err)
-        res.send(err);
-
-      res.json(beer);
-    });
-  });
-});
-// Create endpoint /api/beers/:beer_id for DELETE
-beerRoute.delete(function(req, res) {
-  // Use the Beer model to find a specific beer and remove it
-  Beer.findByIdAndRemove(req.params.beer_id, function(err) {
-    if (err)
-      res.send(err);
-
-    res.json({ message: 'Beer removed from the locker!' });
-  });
-});
 // Register all our routes with /api
 app.use('/api', router);
 
