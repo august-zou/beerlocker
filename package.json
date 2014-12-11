@@ -9,6 +9,7 @@
   "author": "august-zou",
   "dependencies": {
     "express": "^4.10.5",
-    "mongoose": "^3.8.20"
+    "mongoose": "^3.8.20",
+    "body-parser": "^1.10.0"
   }
 }
